@@ -5,7 +5,13 @@
 #
 # Note that written answers are commented out to allow us to run your
 # code easily while grading your problem set.
+# EDITED By Tristan Brugere
+
+from enum import Enum
 import random
+
+import numpy as np
+
 
 import constants as c
 
@@ -23,7 +29,7 @@ def new_game(n):
     matrix = []
     for i in range(n):
         matrix.append([0] * n)
-
+    matrix = np.array(matrix)
     matrix = add_two(matrix)
     matrix = add_two(matrix)
     return matrix
@@ -41,10 +47,10 @@ def new_game(n):
 def add_two(mat):
     a = random.randint(0, len(mat)-1)
     b = random.randint(0, len(mat)-1)
-    while mat[a][b] != 0:
+    while mat[a, b] != 0:
         a = random.randint(0, len(mat)-1)
         b = random.randint(0, len(mat)-1)
-    mat[a][b] = 2
+    mat[a, b] = 2
     return mat
 
 ###########
@@ -59,32 +65,37 @@ def add_two(mat):
 # 2 marks for getting two of the three conditions
 # 3 marks for correct checking
 
+class State(Enum):
+    WIN = 0
+    NOT_OVER = 1
+    LOSE = -1
+
 
 def game_state(mat):
     # check for win cell
-    for i in range(len(mat)):
-        for j in range(len(mat[0])):
-            if mat[i][j] == 2048:
-                return 'win'
+    for elem in np.nditer(mat):
+        if elem == 2048:
+            return State.WIN
+    
     # check for any zero entries
-    for i in range(len(mat)):
-        for j in range(len(mat[0])):
-            if mat[i][j] == 0:
-                return 'not over'
+    for elem in np.nditer(mat):
+        if elem == 0:
+            return State.NOT_OVER
+
     # check for same cells that touch each other
     for i in range(len(mat)-1):
         # intentionally reduced to check the row on the right and below
-        # more elegant to use exceptions but most likely this will be their solution
+        # more elegant to use exceptions but most likely this will be their solution -> dont agree
         for j in range(len(mat[0])-1):
             if mat[i][j] == mat[i+1][j] or mat[i][j+1] == mat[i][j]:
-                return 'not over'
+                return State.NOT_OVER
     for k in range(len(mat)-1):  # to check the left/right entries on the last row
         if mat[len(mat)-1][k] == mat[len(mat)-1][k+1]:
-            return 'not over'
+            return State.NOT_OVER
     for j in range(len(mat)-1):  # check up/down entries on last column
         if mat[j][len(mat)-1] == mat[j+1][len(mat)-1]:
-            return 'not over'
-    return 'lose'
+            return State.NOT_OVER
+    return State.LOSE
 
 ###########
 # Task 2a #
@@ -98,12 +109,7 @@ def game_state(mat):
 
 
 def reverse(mat):
-    new = []
-    for i in range(len(mat)):
-        new.append([])
-        for j in range(len(mat[0])):
-            new[i].append(mat[i][len(mat[0])-j-1])
-    return new
+    return mat[:, ::-1]
 
 ###########
 # Task 2b #
@@ -117,12 +123,7 @@ def reverse(mat):
 
 
 def transpose(mat):
-    new = []
-    for i in range(len(mat[0])):
-        new.append([])
-        for j in range(len(mat)):
-            new[i].append(mat[j][i])
-    return new
+    return np.transpose(mat)
 
 ##########
 # Task 3 #
@@ -154,55 +155,51 @@ def cover_up(mat):
                 if j != count:
                     done = True
                 count += 1
-    return new, done
+    return np.array(new), done
 
 
 def merge(mat, done):
+    score = 0
     for i in range(c.GRID_LEN):
         for j in range(c.GRID_LEN-1):
             if mat[i][j] == mat[i][j+1] and mat[i][j] != 0:
                 mat[i][j] *= 2
                 mat[i][j+1] = 0
                 done = True
-    return mat, done
+                score += mat[i][j]
+    return np.array(mat), done, score
 
 
 def up(game):
-    print("up")
+    # print("up")
     # return matrix after shifting up
     game = transpose(game)
-    game, done = cover_up(game)
-    game, done = merge(game, done)
-    game = cover_up(game)[0]
+    game, done, score = left(game)
     game = transpose(game)
-    return game, done
+    return game, done, score
 
 
 def down(game):
-    print("down")
+    # print("down")
     game = reverse(transpose(game))
-    game, done = cover_up(game)
-    game, done = merge(game, done)
-    game = cover_up(game)[0]
+    game, done, score = left(game)
     game = transpose(reverse(game))
-    return game, done
+    return game, done, score
 
 
 def left(game):
-    print("left")
+    # print("left")
     # return matrix after shifting left
     game, done = cover_up(game)
-    game, done = merge(game, done)
+    game, done, score = merge(game, done)
     game = cover_up(game)[0]
-    return game, done
+    return game, done, score
 
 
 def right(game):
-    print("right")
+    # print("right")
     # return matrix after shifting right
     game = reverse(game)
-    game, done = cover_up(game)
-    game, done = merge(game, done)
-    game = cover_up(game)[0]
+    game, done, score = left(game)
     game = reverse(game)
-    return game, done
+    return game, done, score
