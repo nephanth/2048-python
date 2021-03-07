@@ -53,14 +53,14 @@ class GameEnv(gym.Env):
 
     def reset(self):
         self._matrix = logic.new_game(c.GRID_LEN)
+        self._inactive_penalty = 0
         return self._matrix
 
     def step(self, action: Action):
         action = Action(action)
-        # print(self._ACTION_MAP)
-        # print(action)
         new_matrix, action_done, score = self._ACTION_MAP[action](self._matrix)
-        new_matrix = logic.add_two(new_matrix)
+        if 0 in new_matrix :
+            new_matrix = logic.add_two(new_matrix)
 
         prev_matrix = self._matrix
         self._matrix = new_matrix
