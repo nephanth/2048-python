@@ -13,7 +13,7 @@ import random
 import numpy as np
 
 
-import constants as c
+from . import constants as c
 
 #######
 # Task 1a #

@@ -1,10 +1,10 @@
-from tkinter import Frame, Label, CENTER
-# from puzzle import GameGrid
-import numpy as np
-import gym
 from enum import Enum
-import logic
-import constants as c
+
+import numpy as np
+import numpy.ma as ma
+import gym
+
+from . import logic, constants as c
 
 class Action(Enum):
     UP = 0
@@ -29,9 +29,12 @@ class GameEnv(gym.Env):
 
     _inactive_penalty = 0
     _inactive_penalty_function = None
+
+    _reward_transform = lambda x : x
+    _matrix_transform = lambda x : x
     
 
-    def __init__(self, inactive_penalty=2):
+    def __init__(self, inactive_penalty=2, log_reward = True, log_matrix = True):
         """ 
         Args:
             inactive_penalty : 0 -> no inactive penalty
@@ -44,11 +47,18 @@ class GameEnv(gym.Env):
             2 : self._linear_penalty
         }[inactive_penalty]
 
+        self._reward_transform = self._log_reward if log_reward else lambda x : x
+        self._matrix_transform = self._log_matrix if log_matrix else lambda x : x
+
+
     def reset(self):
         self._matrix = logic.new_game(c.GRID_LEN)
         return self._matrix
 
     def step(self, action: Action):
+        action = Action(action)
+        # print(self._ACTION_MAP)
+        # print(action)
         new_matrix, action_done, score = self._ACTION_MAP[action](self._matrix)
         new_matrix = logic.add_two(new_matrix)
 
@@ -60,10 +70,13 @@ class GameEnv(gym.Env):
 
         info = {"observation_prev": prev_matrix}
 
+        score = self._reward_transform(score)
+        new_matrix = self._matrix_transform(new_matrix)
+
         if not action_done:
             return  new_matrix, score + self._inactive_penalty_function(), done, info
+
         self._reset_inactive_penalty()
-        
         return new_matrix, score, done, info
 
 
@@ -74,52 +87,21 @@ class GameEnv(gym.Env):
         self._inactive_penalty -= 1
         return self._inactive_penalty
 
+    @staticmethod
+    def _log_reward(reward):
+        return np.log2(reward) if reward != 0 else 0
+    
+    @staticmethod
+    def _log_matrix(matrix):
+        masked_matrix = ma.masked_values(matrix, 0)
+        masked_matrix = np.log2(masked_matrix)
+        return masked_matrix.filled(0)
+
+
             
 
 
 
 
 
-
-# class GameEnv(GameGrid, gym.Env):
-#     def __init__(self):
-#         Frame.__init__(self)
-#
-#         self.grid()
-#         self.master.title('2048')
-#         self.master.bind("<Key>", self.key_down)
-#         self._commands = {Action.UP : logic.up,
-#                          Action.DOWN : logic.down,
-#                          Action.LEFT : logic.left,
-#                          Action.RIGHT : logic.right}
-#
-#         self.grid_cells = []
-#         self.init_grid()
-#         self.matrix = logic.new_game(c.GRID_LEN)
-#         self.history_matrixs = []
-#         self.update_grid_cells()
-#
-#         # self.mainloop() # NO MAINLOOP
-#         self.update()
-#
-#
-#     def key_down(self, event): # remove bindings from GameGrid
-#         pass
-#
-#     def score(self):
-#         return 0
-#
-#     def reset(self):
-#         self.matrix = logic.new_game(c.GRID_LEN)
-#         self.update()
-#
-#     def step(self, action):
-#         self.matrix, done = self.commands[action](self.matrix)
-#         self.update()
-#         return done
-
-
-
-
-# env = GameEnv
 
