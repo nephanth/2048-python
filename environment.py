@@ -33,6 +33,7 @@ class GameEnv(gym.Env):
     _reward_transform = lambda x : x
     _matrix_transform = lambda x : x
     
+    total_score = 0
 
     def __init__(self, inactive_penalty=2, log_reward = True, log_matrix = True):
         """ 
@@ -54,11 +55,13 @@ class GameEnv(gym.Env):
     def reset(self):
         self._matrix = logic.new_game(c.GRID_LEN)
         self._inactive_penalty = 0
+        self.total_score = 0
         return self._matrix
 
     def step(self, action: Action):
         action = Action(action)
         new_matrix, action_done, score = self._ACTION_MAP[action](self._matrix)
+        self.total_score += score
         if 0 in new_matrix :
             new_matrix = logic.add_two(new_matrix)
 
