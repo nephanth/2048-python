@@ -48,20 +48,27 @@ class GameEnv(gym.Env):
             2 : self._linear_penalty
         }[inactive_penalty]
 
-        self._reward_transform = self._log_reward if log_reward else lambda x : x
+        self._reward_transform = self._log_reward if log_reward else lambda x : x  #if log_reward True, we apply the _log_reward function
         self._matrix_transform = self._log_matrix if log_matrix else lambda x : x
-
+        self.max_tile = 0
+        self.nbr_merge = 0
+        self.sum_tiles = 0
 
     def reset(self):
         self._matrix = logic.new_game(c.GRID_LEN)
         self._inactive_penalty = 0
         self.total_score = 0
+        self.max_tile=0
+        self.nbr_merge=0
+        self.sum_tiles = 0
         return self._matrix
 
     def step(self, action: Action):
+
         action = Action(action)
         new_matrix, action_done, score = self._ACTION_MAP[action](self._matrix)
         self.total_score += score
+
         if 0 in new_matrix :
             new_matrix = logic.add_two(new_matrix)
 
@@ -71,7 +78,14 @@ class GameEnv(gym.Env):
         state = logic.game_state(new_matrix)
         done = state == logic.State.LOSE
 
-        info = {"observation_prev": prev_matrix}
+        #Counting the number of merges
+        N_i = np.count_nonzero(prev_matrix)
+        N_f = np.count_nonzero(self._matrix)
+        self.nbr_merge = N_i - N_f + 1
+
+        self.max_tile = np.max(new_matrix)
+
+        info = {"observation_prev": prev_matrix, 'max_tile':self.max_tile, 'score':self.total_score}
 
         score = self._reward_transform(score)
         new_matrix = self._matrix_transform(new_matrix)
