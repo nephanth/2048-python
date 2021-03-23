@@ -3,6 +3,7 @@ from enum import Enum
 import numpy as np
 import numpy.ma as ma
 import gym
+import random
 
 from . import logic, constants as c
 
@@ -70,7 +71,10 @@ class GameEnv(gym.Env):
         self.total_score += score
 
         if 0 in new_matrix :
-            new_matrix = logic.add_two(new_matrix)
+            if random.random()< .9:
+                new_matrix = logic.add_two(new_matrix)
+            else :
+                new_matrix = logic.add_four(new_matrix)
 
         prev_matrix = self._matrix
         self._matrix = new_matrix

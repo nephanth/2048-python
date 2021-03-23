@@ -53,6 +53,15 @@ def add_two(mat):
     mat[a, b] = 2
     return mat
 
+
+def add_four(mat):
+    a = random.randint(0, len(mat)-1)
+    b = random.randint(0, len(mat)-1)
+    while mat[a, b] != 0:
+        a = random.randint(0, len(mat)-1)
+        b = random.randint(0, len(mat)-1)
+    mat[a, b] = 4
+    return mat
 ###########
 # Task 1c #
 ###########
