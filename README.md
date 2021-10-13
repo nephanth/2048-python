@@ -1,18 +1,11 @@
-2048-python
+2048-python gym environment
 ===========
 
-[![Run on Repl.it](https://repl.it/badge/github/yangshun/2048-python)](https://repl.it/github/yangshun/2048-python)
-
-Based on the popular game [2048](https://github.com/gabrielecirulli/2048) by Gabriele Cirulli. The game's objective is to slide numbered tiles on a grid to combine them to create a tile with the number 2048. Here is a Python version that uses TKinter! 
-
-![screenshot](img/screenshot.png)
-
-To start the game, run:
-    
-    $ python3 puzzle.py
+Fork of yangshun/2048-python changing it into a gym environment, for reinforcement lear
 
 
-Contributors:
+
+Original author of 2048-python:
 ==
 
 - [Yanghun Tay](http://github.com/yangshun)
