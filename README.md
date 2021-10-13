@@ -1,7 +1,7 @@
 2048-python gym environment
 ===========
 
-Fork of yangshun/2048-python changing it into a gym environment, for reinforcement lear
+Fork of yangshun/2048-python changing it into a gym environment, for reinforcement learning training
 
 
 
